@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+  ap:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: ap
+    volumes:
+      - ./var/www/html:/var/www/html
+      - ./conf/apache2.conf:/etc/apache2/apache2.conf
+      - ./conf/ports.conf:/etc/apache2/ports.conf
+      - ./conf/envvars:/etc/apache2/envvars
+      - ./conf/000-default.conf:/etc/apache2/sites-enabled/000-default.conf
+      - ./conf/charset.conf:/etc/apache2/conf-enabled/charset.conf
+      - ./conf/security.conf:/etc/apache2/conf-enabled/security.conf
+    entrypoint: ["chmod","707","/var/www/html/data"]
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    environment:
+      - name=value
+    networks:
+      - default
+      - intra_net
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    environment:
+      MYSQL_USER: gnuboard
+      MYSQL_PASSWORD: gnuboard!
+      MYSQL_DATABASE: gnuboard
+      MYSQL_RANDOM_ROOT_PASSWORD: yes
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - ./mysql:/var/lib/mysql
+    networks:
+      - intra_net
+    
+networks:
+  intra_net:
+    driver: bridge
